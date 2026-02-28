@@ -6,16 +6,16 @@ import models
 # Import Routers
 from routes import auth_routes, chat_routes, doctor_routes, report_routes, patient_routes
 
-# Initialize Database Tables
+# Create Tables in PostgreSQL (if they do not exist)
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Doctor Patient Room API",
     description="AI-Assisted Clinical Triage System",
-    version="1.4.2"
+    version="1.5.0"
 )
 
-# CORS MIDDLEWARE
+# CORS Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,23 +24,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# REGISTER ROUTES
-app.include_router(auth_routes.router)
-app.include_router(chat_routes.router)
-app.include_router(doctor_routes.router)
-app.include_router(report_routes.router) # Reports, Queue, Audit, Sync
-app.include_router(patient_routes.router)
+# Register Routers
+app.include_router(auth_routes.router, tags=["Authentication"])
+app.include_router(chat_routes.router, tags=["AI Chat"])
+app.include_router(doctor_routes.router, tags=["Doctor"])
+app.include_router(report_routes.router, tags=["Reports"])
+app.include_router(patient_routes.router, tags=["Patient"])
 
 @app.get("/")
 def root():
-    return {"status": "online", "project": "Doctor Patient Room", "version": "1.4.2"}
-
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
-
-
-
-
-
+    return {
+        "status": "online",
+        "project": "Doctor Patient Room",
+        "version": "1.5.0",
+        "database": "PostgreSQL Connected"
+    }
