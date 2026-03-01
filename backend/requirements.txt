@@ -10,9 +10,9 @@ cryptography==42.0.2
 
 # AI & NLP Engine
 openai==1.12.0
+groq==0.4.2  <-- ADD THIS LINE
 langchain==0.1.7
 numpy<2.0.0
-# Downgraded to 3.6.1 to match scispacy 0.5.3 requirements
 spacy==3.6.1
 scispacy==0.5.3
 blis==0.7.11
