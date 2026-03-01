@@ -71,43 +71,50 @@ def signup_doctor(user: schemas.UserCreate, secret_code: str, db: Session = Depe
 # --- LOGIN ---
 @router.post("/login", response_model=schemas.TokenResponse)
 def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
+    # 1. Fetch User
     db_user = db.query(models.User).filter(models.User.email == user.email).first()
     
     if not db_user:
+        # Standard security practice: don't reveal if email exists or not
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    # 2. Verify Password
-    if not verify_password(user.password, db_user.password):
+    # 2. Verify Password 
+    # Ensure your verify_password function uses the corrected passlib/bcrypt setup
+    try:
+        is_password_correct = verify_password(user.password, db_user.password)
+    except Exception as e:
+        # This catches library version errors (like the bcrypt __about__ error)
+        print(f"Login Hash Error: {e}")
+        raise HTTPException(status_code=500, detail="Internal authentication error")
+
+    if not is_password_correct:
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
     # 3. Create JWT Token
-    token = create_token({
+    token_data = {
         "user_id": db_user.id,
         "role": db_user.role,
         "email": db_user.email
-    })
+    }
+    token = create_token(token_data)
 
     # 4. Smart Redirection Logic
-    destination = "chat_interface"
-    if db_user.role == "doctor":
-        destination = "doctor_dashboard"
+    destination = "doctor_dashboard" if db_user.role == "doctor" else "chat_interface"
 
-    # Inside auth_routes.py -> login function
-    # Ensure patient_uid is included in the dictionary sent back to the app
+    # 5. Return complete user profile for the React Native state
     return {
-    "access_token": token,
-    "token_type": "bearer",
-    "role": db_user.role,
-    "user_id": db_user.id,
-    "id": db_user.id,
-    "email": user.email,
-    "patient_uid": db_user.patient_uid,
-    "name": db_user.name,
-    "age": db_user.age,
-    "place": db_user.place,
-    "redirect": destination
-}
-
+        "access_token": token,
+        "token_type": "bearer",
+        "role": db_user.role,
+        "user_id": db_user.id,
+        "id": db_user.id, # Redundant but kept for frontend compatibility
+        "email": db_user.email,
+        "name": db_user.name,
+        "age": db_user.age,
+        "place": db_user.place,
+        "patient_uid": db_user.patient_uid,
+        "redirect": destination
+    }
 # Add this to your existing auth_routes.py
 @router.put("/update-profile")
 def update_profile(data: schemas.ProfileUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
@@ -136,4 +143,5 @@ def update_profile(data: schemas.ProfileUpdate, db: Session = Depends(get_db), c
             "age": db_user.age,
             "place": db_user.place
         }
+
     }
