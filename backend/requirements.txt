@@ -12,11 +12,11 @@ cryptography==42.0.2
 openai==1.12.0
 langchain==0.1.7
 numpy<2.0.0
-spacy==3.7.2
+# Downgraded to 3.6.1 to match scispacy 0.5.3 requirements
+spacy==3.6.1
 scispacy==0.5.3
-# These specific versions help prevent the 'blis' build error
 blis==0.7.11
-thinc==8.2.1
+thinc==8.1.12
 
 # Security & Utils
 python-jose[cryptography]==3.3.0
