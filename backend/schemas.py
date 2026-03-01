@@ -19,17 +19,18 @@ class ProfileUpdate(BaseModel):
     age: int
     place: str
 
+# Inside schemas.py
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str
     role: str
-    id: int
     user_id: int
-    email: str | None = None
-    patient_uid: str | None = None
-    name: str | None = None
-    age: int | None = None
-    place: str | None = None
+    id: int
+    email: str
+    name: str
+    age: Optional[int] = None
+    place: Optional[str] = None
+    patient_uid: Optional[str] = None
     redirect: str
 
 # ---------- CHAT SCHEMAS ----------
