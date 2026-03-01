@@ -5,18 +5,22 @@ python-multipart==0.0.9
 
 # Database & ORM
 sqlalchemy==2.0.27
-psycopg2-binary
+psycopg2-binary==2.9.9
 cryptography==42.0.2
 
 # AI & NLP Engine
 openai==1.12.0
 langchain==0.1.7
+numpy<2.0.0
 spacy==3.7.2
-scispaCy==0.5.3
+scispacy==0.5.3
+# These specific versions help prevent the 'blis' build error
+blis==0.7.11
+thinc==8.2.1
 
 # Security & Utils
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 python-dotenv==1.0.1
-
 pydantic[email]==2.6.1
+pydantic-settings==2.1.0
