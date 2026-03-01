@@ -10,7 +10,7 @@ cryptography==42.0.2
 
 # AI & NLP Engine
 openai==1.12.0
-groq==0.4.2  <-- ADD THIS LINE
+groq==0.4.2  
 langchain==0.1.7
 numpy<2.0.0
 spacy==3.6.1
@@ -24,3 +24,4 @@ passlib[bcrypt]==1.7.4
 python-dotenv==1.0.1
 pydantic[email]==2.6.1
 pydantic-settings==2.1.0
+
