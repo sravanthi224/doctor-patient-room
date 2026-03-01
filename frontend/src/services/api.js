@@ -1,35 +1,52 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Your Computer's IP
-export const BASE_URL = 'http://192.168.43.50:8000'; 
+// Render Backend URL (Updated from Local IP)
+export const BASE_URL = 'https://doctor-patient-room-backend.onrender.com'; 
 
 const API = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000, // 10 seconds timeout for reliability
+  // Increased to 30s because Render Free Tier needs time to "wake up" on the first request
+  timeout: 30000, 
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
 });
 
 // REQUEST INTERCEPTOR: Inject the token automatically
 API.interceptors.request.use(async (config) => {
-  const token = await AsyncStorage.getItem('access_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  try {
+    const token = await AsyncStorage.getItem('access_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  } catch (error) {
+    return Promise.reject(error);
   }
-  return config;
 }, (error) => {
   return Promise.reject(error);
 });
 
-// RESPONSE INTERCEPTOR: Handle expired tokens
+// RESPONSE INTERCEPTOR: Handle expired tokens & Server Sleep
 API.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // If the backend returns 401, the user's token is invalid or expired
+    const originalRequest = error.config;
+
+    // Handle 401 Unauthorized (Token Expired or Invalid)
     if (error.response && error.response.status === 401) {
-      await AsyncStorage.clear();
-      // Note: Navigating from a service file is tricky, 
-      // but clearing storage ensures the next reload forces a login.
+      console.warn("Session expired. Clearing storage...");
+      await AsyncStorage.multiRemove(['access_token', 'user_role', 'user_id']);
+      // The app's AuthContext should ideally listen for storage changes to redirect to Login
     }
+
+    // Handle Render's "Service Unavailable" or Timeouts during wake-up
+    if (!error.response) {
+      console.error("Network error or Server is waking up. Please wait.");
+    }
+
     return Promise.reject(error);
   }
 );
